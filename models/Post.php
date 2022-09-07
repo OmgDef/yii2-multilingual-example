@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use lhs\Yii2SaveRelationsBehavior\SaveRelationsBehavior;
 use omgdef\multilingual\MultilingualBehavior;
 use omgdef\multilingual\MultilingualQuery;
 use Yii;
@@ -12,6 +13,7 @@ use Yii;
  * @property int $id
  * @property string $title
  * @property string $text
+ * @property Tag[] $tags
  */
 class Post extends \yii\db\ActiveRecord
 {
@@ -32,6 +34,7 @@ class Post extends \yii\db\ActiveRecord
             [['title', 'text'], 'required'],
             [['text'], 'string'],
             [['title'], 'string', 'max' => 255],
+            [['tags'], 'safe']
         ];
     }
 
@@ -56,6 +59,16 @@ class Post extends \yii\db\ActiveRecord
     }
 
     /**
+     * Gets query for [[Tag]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getTags()
+    {
+        return $this->hasMany(Tag::class, ['id' => 'tag_id'])->viaTable('post_tag_assn', ['post_id' => 'id']);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function behaviors()
@@ -74,6 +87,12 @@ class Post extends \yii\db\ActiveRecord
                 'attributes' => [
                     'title', 'text',
                 ]
+            ],
+            'saveRelations' => [
+                'class' => SaveRelationsBehavior::class,
+                'relations' => [
+                    'tags',
+                ],
             ],
         ];
     }
